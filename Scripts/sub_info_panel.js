@@ -1,70 +1,60 @@
 /*
 Surge配置参考注释，感谢@asukanana,感谢@congcong.
-
+By：mieqq（https://github.com/mieqq/mieqq）
+https://github.com/mieqq/mieqq/blob/master/sub_info.js
 示例↓↓↓ 
 ----------------------------------------
-
+[Proxy Group]
+Amy = select, policy-path=http://sub.info?url=encode后的机场节点链接&reset_day=13&alert=1&title=Amytelecom, update-interval=3600
 [Script]
-Sub_info = type=generic,timeout=10,script-path=https://raw.githubusercontent.com/zzm1908822163/Surge/master/Scripts/sub_info_panel.js,script-update-interval=0,argument=url=[URL encode 后的机场节点链接]
-
-[Panel]
-Sub_info = script-name=Sub_info,update-interval=600
-
+机场信息 = type=http-request,pattern=http://sub\.info,script-path=https://raw.githubusercontent.com/TributePaulWalker/Profiles/main/JavaScript/Surge/Sub_info_lite.js,timeout=10
 ----------------------------------------
-
-先将带有流量信息的节点订阅链接encode，用encode后的链接替换"url="后面的[机场节点链接]
-
-（实在不会可以用这个捷径生成panel和脚本，https://www.icloud.com/shortcuts/3f24df391d594a73abd04ebdccd92584）
-
+脚本不用修改，直接配置就好。
+先将带有流量信息的节点订阅链接encode，用encode后的链接替换"url="后面的[机场节点链接](订阅encode链接：https://www.urlencoder.org)
 可选参数 &reset_day，后面的数字替换成流量每月重置的日期，如1号就写1，8号就写8。如"&reset_day=8",不加该参数不显示流量重置信息。
-
 可选参数 &expire，机场链接不带expire信息的，可以手动传入expire参数，如"&expire=2022-02-01",注意一定要按照yyyy-MM-dd的格式。
-
-可选参数"title=xxx" 可以自定义标题。
-
-可选参数"icon=xxx" 可以自定义图标，内容为任意有效的 SF Symbol Name，如 bolt.horizontal.circle.fill，详细可以下载app https://apps.apple.com/cn/app/sf-symbols-browser/id1491161336
-
-可选参数"color=xxx" 当使用 icon 字段时，可传入 color 字段控制图标颜色，字段内容为颜色的 HEX 编码。如：color=#007aff
+可选参数 &alert，流量用量超过80%、流量重置2天前、流量重置、套餐快到期，这四种情况会发送通知，参数"title=xxx" 可以自定义通知的标题。如"&alert=1&title=AmyInfo",多个机场信息，且需要通知的情况，一定要加 title 参数，不然通知判断会出现问题
 ----------------------------------------
 */
 
-let args = getArgs();
+let now = new Date();
+let today = now.getDate();
+let month = now.getMonth();
+let year = now.getFullYear();
+let args = getArgs($request.url);
+let resetDay = parseInt(args["due_day"] || args["reset_day"]);
+let resetDayLeft = getRmainingDays(resetDay);
 
 (async () => {
-  let info = await getDataInfo(args.url);
-  if (!info) $done();
-  let resetDayLeft = getRmainingDays(parseInt(args["reset_day"]));
-
-  let used = info.download + info.upload;
-  let total = info.total;
-  let expire = args.expire || info.expire;
-  let content = [`用量：${bytesToSize(used)} | ${bytesToSize(total)}`];
+  let is_enhanced = await is_enhanced_mode();
+  if (is_enhanced) await sleep(2000)
+  let usage = await getDataInfo(args.url);
+  if (!usage) {
+    $done({})
+    return;
+  }
+  let used = usage.download + usage.upload;
+  let total = usage.total;
+  let expire = usage.expire || args.expire;
+  let localProxy = ['=http, localhost, 6152','=http, 127.0.0.1, 6152','=socks5,127.0.0.1, 6153']
+  let infoList = [`${bytesToSize(used)} | ${bytesToSize(total)}`];
 
   if (resetDayLeft) {
-    content.push(`重置：剩余${resetDayLeft}天`);
+    infoList.push(`重置：剩余${resetDayLeft}天`);
   }
   if (expire) {
     if (/^[\d.]+$/.test(expire)) expire *= 1000;
-    content.push(`到期：${formatTime(expire)}`);
+    infoList.push(`到期：${formatTime(expire)}`);
   }
-
-  let now = new Date();
-  let hour = now.getHours();
-  let minutes = now.getMinutes();
-  hour = hour > 9 ? hour : "0" + hour;
-  minutes = minutes > 9 ? minutes : "0" + minutes;
-
-  $done({
-    title: `${args.title} | ${hour}:${minutes}`,
-    content: content.join("\n"),
-    icon: args.icon || "n.circle",
-    "icon-color": args.color || "#FF86CA",
-  });
+  sendNotification(used / total, expire, infoList);
+  let body = infoList.map((item, index) => item+localProxy[index]).join("\n");
+  $done({ response: { body } });
 })();
 
-function getArgs() {
+function getArgs(url) {
   return Object.fromEntries(
-    $argument
+    url
+      .slice(url.indexOf("?") + 1)
       .split("&")
       .map((item) => item.split("="))
       .map(([k, v]) => [k, decodeURIComponent(v)])
@@ -72,16 +62,15 @@ function getArgs() {
 }
 
 function getUserInfo(url) {
-  let method = args.method || "head";
   let request = { headers: { "User-Agent": "Quantumult%20X" }, url };
   return new Promise((resolve, reject) =>
-    $httpClient[method](request, (err, resp) => {
+    $httpClient.head(request, (err, resp) => {
       if (err != null) {
         reject(err);
         return;
       }
       if (resp.status !== 200) {
-        reject(resp.status);
+        reject("Not Available");
         return;
       }
       let header = Object.keys(resp.headers).find(
@@ -107,26 +96,16 @@ async function getDataInfo(url) {
 
   return Object.fromEntries(
     data
-      .match(/\w+=[\d.eE+]+/g)
+      .match(/\w+=\d+/g)
       .map((item) => item.split("="))
-      .map(([k, v]) => [k, Number(v)])
+      .map(([k, v]) => [k, parseInt(v)])
   );
 }
 
 function getRmainingDays(resetDay) {
-  if (!resetDay) return;
-
-  let now = new Date();
-  let today = now.getDate();
-  let month = now.getMonth();
-  let year = now.getFullYear();
-  let daysInMonth;
-
-  if (resetDay > today) {
-    daysInMonth = 0;
-  } else {
-    daysInMonth = new Date(year, month + 1, 0).getDate();
-  }
+  if (!resetDay) return 0;
+  let daysInMonth = new Date(year, month + 1, 0).getDate();
+  if (resetDay > today) daysInMonth = 0;
 
   return daysInMonth - today + resetDay;
 }
@@ -137,4 +116,83 @@ function bytesToSize(bytes) {
   sizes = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
   let i = Math.floor(Math.log(bytes) / Math.log(k));
   return (bytes / Math.pow(k, i)).toFixed(2) + " " + sizes[i];
+}
+
+function formatTime(time) {
+  let dateObj = new Date(time);
+  let year = dateObj.getFullYear();
+  let month = dateObj.getMonth() + 1;
+  let day = dateObj.getDate();
+  return year + "年" + month + "月" + day + "日";
+}
+
+function sendNotification(usageRate, expire, infoList) {
+  if (!args.alert) return;
+  let title = args.title || "Sub Info";
+  let subtitle = infoList[0];
+  let body = infoList.slice(1).join("\n");
+  usageRate = usageRate * 100;
+
+  if (resetDay <= today) month += 1;
+  let resetTime = new Date(year, month, resetDay);
+  //通知计数器，每月重置日重置
+  let notifyCounter = JSON.parse($persistentStore.read(title) || "{}");
+  if (!notifyCounter[resetTime]) {
+    notifyCounter = {
+      [resetTime]: { usageRate: 80, resetDayLeft: 3, expire: 31, resetDay: 1 },
+    };
+  }
+
+  let count = notifyCounter[resetTime];
+
+  if (usageRate > count.usageRate && resetDay != today) {
+    $notification.post(
+      `${title} | 剩余流量不足${Math.ceil(100 - usageRate)}%`,
+      subtitle,
+      body
+    );
+    while (usageRate > count.usageRate) {
+      if (count.usageRate < 95) {
+        count.usageRate += 5;
+      } else {
+        count.usageRate += 4;
+      }
+    }
+  }
+  if (resetDayLeft && resetDayLeft < count.resetDayLeft && resetDay != today) {
+    $notification.post(
+      `${title} | 流量将在${resetDayLeft}天后重置`,
+      subtitle,
+      body
+    );
+    count.resetDayLeft = resetDayLeft;
+  }
+  if (resetDay == today && count.resetDay && usageRate < 5) {
+    $notification.post(`${title} | 流量已重置`, subtitle, body);
+    count.resetDay = 0;
+  }
+  if (expire) {
+    let diff = (new Date(expire) - now) / (1000 * 3600 * 24);
+    if (diff < count.expire) {
+      $notification.post(
+        `${title} | 套餐剩余时间不足${Math.ceil(diff)}天`,
+        subtitle,
+        body
+      );
+      count.expire -= 5;
+    }
+  }
+  $persistentStore.write(JSON.stringify(notifyCounter), title);
+}
+
+function is_enhanced_mode() {
+  return new Promise((resolve) =>
+    $httpAPI("GET", "v1/features/enhanced_mode", null, (data) => {
+      resolve(data.enabled);
+    })
+  );
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
 }
