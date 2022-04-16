@@ -1,11 +1,11 @@
 /*
 [Script]
-flushDNS = type=generic,timeout=10,script-path=https://raw.githubusercontent.com/zZPiglet/Task/master/asset/flushDNS.js
+FlushDNS = type=generic,timeout=10,script-path=https://raw.githubusercontent.com/zzm1908822163/Surge/master/Scripts/FlushDNS.js
 // use "title" or "icon" or "color" or "server" in "argument":
-// flushDNS = type=generic,timeout=10,script-path=https://raw.githubusercontent.com/zZPiglet/Task/master/asset/flushDNS.js,argument=title=DNS FLush&icon=arrow.clockwise&color=#3d3d5b&server=false
+// flushDNS = type=generic,timeout=10,script-path=https://raw.githubusercontent.com/zzm1908822163/Surge/master/Scripts/FlushDNS.js,argument=title=DNS FLush&icon=arrow.clockwise&color=#3d3d5b&server=false
 
 [Panel]
-flushDNS = script-name=flushDNS,update-interval=600
+FlushDNS = script-name=FlushDNS,update-interval=600
 */
 
 !(async () => {
