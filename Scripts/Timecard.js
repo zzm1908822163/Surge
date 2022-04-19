@@ -75,7 +75,7 @@ function datenotice() {
   }
 }
 $done({
-title:"节假日倒计时",
+title:"Timecard",
 icon:"list.bullet.rectangle",
 'icon-color': "#5AC8FA",
 content:tlist[nowlist][0]+":"+today(tnumcount(nowlist))+"天，"+tlist[Number(nowlist) + Number(1)][0] +":"+ tnumcount(Number(nowlist) + Number(1))+ "天，"+tlist[Number(nowlist) + Number(2)][0]+":"+tnumcount(Number(nowlist) + Number(2))+"天"
