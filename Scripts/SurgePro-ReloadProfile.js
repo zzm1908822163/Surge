@@ -10,10 +10,10 @@ let startTime = timeTransform(dateNow,dateTime)
 if ($trigger == "button") await httpAPI("/v1/profiles/reload");
 
   $done({
-      title:'Surge',
+      title:"Surge",
       content:`${startTime}`,
-		icon: 'power.circle.fill',
-		"icon-color":#C51000
+		icon: power.circle.fill,
+		"icon-color":params.color
     });
 
 })();
