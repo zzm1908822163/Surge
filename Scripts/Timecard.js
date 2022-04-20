@@ -75,7 +75,7 @@ function datenotice() {
   }
 }
 $done({
-title:"Timecard",
+title:'还有 ' + today(tnumcount(nowlist)) + ',
 icon:"list.bullet.rectangle",
 'icon-color': "#5AC8FA",
 content:tlist[nowlist][0]+":"+today(tnumcount(nowlist))+"天,"+tlist[Number(nowlist) + Number(1)][0] +":"+ tnumcount(Number(nowlist) + Number(1))+ "天,"+tlist[Number(nowlist) + Number(2)][0]+":"+tnumcount(Number(nowlist) + Number(2))+"天"
