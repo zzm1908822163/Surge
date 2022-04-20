@@ -1,5 +1,5 @@
 var tlist = {
-  1: ["劳动", "2022-05-01"],
+  1: ["五一", "2022-05-01"],
   2: ["老爸生日", "2022-06-02"],
   3: ["生日", "2022-06-17"],
   4: ["端午", "2022-06-03"],
@@ -78,5 +78,5 @@ $done({
 title:"Timecard",
 icon:"list.bullet.rectangle",
 'icon-color': "#5AC8FA",
-content:tlist[nowlist][0]+":"+today(tnumcount(nowlist))+"天，"+tlist[Number(nowlist) + Number(1)][0] +":"+ tnumcount(Number(nowlist) + Number(1))+ "天，"+tlist[Number(nowlist) + Number(2)][0]+":"+tnumcount(Number(nowlist) + Number(2))+"天"
+content:tlist[nowlist][0]+":"+today(tnumcount(nowlist))+"天,"+tlist[Number(nowlist) + Number(1)][0] +":"+ tnumcount(Number(nowlist) + Number(1))+ "天,"+tlist[Number(nowlist) + Number(2)][0]+":"+tnumcount(Number(nowlist) + Number(2))+"天"
 })
