@@ -26,7 +26,7 @@ const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (
       'icon-color': '#55DB56',
     }
   let [{ region, status }] = await Promise.all([testDisneyPlus()])
-    await Promise.all([check_youtube_premium(),check_netflix()])
+    await Promise.all([check_netflix()])
       .then((result) => { 
          console.log(result)
  let disney_result=""
@@ -55,55 +55,7 @@ panel_result['content'] = content
         $done(panel_result)
       })
   })()
-  async function check_youtube_premium() {
-    let inner_check = () => {
-      return new Promise((resolve, reject) => {
-        let option = {
-          url: 'https://www.youtube.com/premium',
-          headers: REQUEST_HEADERS,
-        }
-        $httpClient.get(option, function (error, response, data) {
-          if (error != null || response.status !== 200) {
-            reject('Error')
-            return
-          }
   
-          if (data.indexOf('Premium is not available in your country') !== -1) {
-            resolve('Not Available')
-            return
-          }
-  
-          let region = ''
-          let re = new RegExp('"countryCode":"(.*?)"', 'gm')
-          let result = re.exec(data)
-          if (result != null && result.length === 2) {
-            region = result[1]
-          } else if (data.indexOf('www.google.cn') !== -1) {
-            region = 'CN'
-          } else {
-            region = 'US'
-          }
-          resolve(region)
-        })
-      })
-    }
-  
-    let youtube_check_result = 'YouTube: '
-  
-    await inner_check()
-      .then((code) => {
-        if (code === 'Not Available') {
-          youtube_check_result += '🚫'
-        } else {
-          youtube_check_result += '解锁 ➟ ' + code.toUpperCase()
-        }
-      })
-      .catch((error) => {
-        youtube_check_result += '🔄'
-      })
-  
-    return youtube_check_result
-  }
 
   async function check_netflix() {
     let inner_check = (filmId) => {
