@@ -11,7 +11,7 @@ if ($trigger == "button") await httpAPI("/v1/profiles/reload");
 
   $done({
       title:"Surge",
-      content:`${startTime}`,
+      content:` ${startTime}`,
 		icon: power.circle.fill,
 		"icon-color":params.color
     });
