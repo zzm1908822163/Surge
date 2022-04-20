@@ -95,7 +95,7 @@ panel_result['content'] = content
         if (code === 'Not Available') {
           youtube_check_result += '🚫'
         } else {
-          youtube_check_result += '已解锁 ➟ ' + code.toUpperCase()
+          youtube_check_result += '解锁 ➟ ' + code.toUpperCase()
         }
       })
       .catch((error) => {
