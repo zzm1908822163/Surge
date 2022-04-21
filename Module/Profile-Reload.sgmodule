@@ -1,8 +1,0 @@
-#!name=配置重载
-#!desc=刷新
-
-[Panel]
-ReloadProfile = script-name=ReloadProfile,update-interval=1
-
-[Script]
-ReloadProfile = type=generic,timeout=10,script-path= https://raw.githubusercontent.com/zzm1908822163/Surge/master/Scripts/Profile-Reload.js ,argument=icon=crown.fill&color=#f6c970
