@@ -9,7 +9,7 @@ FlushDNS = script-name=FlushDNS,update-interval=600
 */
 
 !(async () => {
-    let panel = { title: "Flush DNS" },
+    let panel = { title: "𝑭𝒍𝒖𝒔𝒉 𝑫𝑵𝑺" },
         showServer = true,
         dnsCache;
     if (typeof $argument != "undefined") {
@@ -25,7 +25,7 @@ FlushDNS = script-name=FlushDNS,update-interval=600
     }
     if ($trigger == "button") await httpAPI("/v1/dns/flush");
     let delay = ((await httpAPI("/v1/test/dns_delay")).delay * 1000).toFixed(0);
-    panel.content = `delay: ${delay}ms${dnsCache ? `\nserver:\n${dnsCache}` : ""}`;
+    panel.content = `𝑫𝒆𝒍𝒂𝒚: ${delay}𝒎𝒔${dnsCache ? `\n𝑺𝒆𝒓𝒗𝒆𝒓:\n${dnsCache}` : ""}`;
     $done(panel);
 })();
 
