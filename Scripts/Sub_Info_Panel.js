@@ -45,7 +45,7 @@ let args = getArgs();
   }
   if (expire && expire !== "false") {
     if (/^[\d.]+$/.test(expire)) expire *= 1000;
-    content.push(`到期：${formatTime(expire)}`);
+    content.push(`${formatTime(expire)}`);
   }
 
   let now = new Date();
