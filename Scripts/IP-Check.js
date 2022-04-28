@@ -21,7 +21,7 @@ $httpClient.get(url, function(error, response, data){
   body = {
     title: "𝑵𝒆𝒕𝑰𝒏𝒇𝒐",
     content: `𝑰𝑷 : ${ip}\n𝑰𝑺𝑷 : ${isp}\n𝑨𝒅𝒅𝒓𝒆𝒔𝒔: ${country}  ${city}`,
-    icon: "network",
+    icon: "antenna.radiowaves.left.and.right",
     'icon-color': "#5AC8FA"
   }
   $done(body);
