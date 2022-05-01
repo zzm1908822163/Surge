@@ -48,9 +48,9 @@ let inCurrentSpeed = speedTransform(network.inCurrentSpeed) //下载速度
 /* 判断网络类型 */
 let netType;
 if(net=="en0") {
-	netType = "WiFi"
+	netType = "𝑾𝒊𝒇𝒊"
 	}else{
-	netType = "Cellular"
+	netType = "𝑪𝒆𝒍𝒍𝒖𝒍𝒂𝒓"
 	}
 
 
